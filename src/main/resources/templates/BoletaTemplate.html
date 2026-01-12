@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+        body { font-family: sans-serif; font-size: 12px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        .total { font-weight: bold; text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>BOLETA DE VENTA</h1>
+        <p>Cliente: <span th:text="${clientName}">Juan Perez</span></p>
+        <p>Fecha: <span th:text="${date}">12/01/2026</span></p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Cant.</th>
+                <th>Producto</th>
+                <th>Precio Unit.</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="item : ${items}">
+                <td th:text="${item.quantity}">1</td>
+                <td th:text="${item.productName}">Filtro Aceite</td>
+                <td th:text="${item.unitPrice}">10.00</td>
+                <td th:text="${item.subtotal}">10.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p class="total">TOTAL: S/ <span th:text="${totalAmount}">100.00</span></p>
+</body>
+</html>
