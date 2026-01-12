@@ -45,4 +45,14 @@ interface ProductRepository : JpaRepository<Product, Long> {
     """)
     override fun findAll(pageable: Pageable): Page<Product>
 
+
+
+    // Cuenta cuántos productos están en peligro (stock <= minStock)
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.isActive = true AND p.stockQuantity <= p.minStockAlert")
+    fun countLowStock(): Long
+
+    // Trae la lista de productos en peligro (para mostrar en tabla)
+    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.stockQuantity <= p.minStockAlert")
+    fun findLowStockProducts(): List<Product>
+
 }
