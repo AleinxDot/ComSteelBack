@@ -2,7 +2,7 @@ package com.aleinx.comsteelback.modules.sales.model
 
 import com.aleinx.comsteelback.common.enums.DocumentStatus
 import com.aleinx.comsteelback.common.enums.DocumentType
-import com.aleinx.comsteelback.modules.auth.model.Customer
+import com.aleinx.comsteelback.modules.sales.model.Customer
 import com.aleinx.comsteelback.modules.auth.model.User
 import com.aleinx.comsteelback.modules.catalog.model.Product
 import jakarta.persistence.*
@@ -45,7 +45,7 @@ class Document(
 
     @Column(name="status", nullable = true, length = 20)
     @Enumerated(EnumType.STRING)
-    var status: DocumentStatus = DocumentStatus.COMPLETED,
+    var status: DocumentStatus = DocumentStatus.ACTIVE,
 
     // Relación Bidireccional: Un documento tiene muchos detalles
     // CascadeType.ALL: Si guardo el documento, guarda los detalles.

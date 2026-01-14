@@ -9,6 +9,7 @@ import com.aleinx.comsteelback.modules.sales.model.Document
 import com.aleinx.comsteelback.modules.sales.model.DocumentDetail
 import com.aleinx.comsteelback.modules.sales.repository.ClientRepository
 import com.aleinx.comsteelback.modules.sales.repository.DocumentRepository
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -21,6 +22,7 @@ class SaleService(
     private val clientRepository: ClientRepository
 ) {
 
+    fun listQuotes() = documentRepository.findAll().filter { it.documentType == DocumentType.COTIZACION }
     @Transactional
     fun registerSale(request: CreateSaleRequest, username: String): SaleResponse {
 
@@ -46,13 +48,13 @@ class SaleService(
             val product = productRepository.findById(itemRequest.productId)
                 .orElseThrow { RuntimeException("Producto no encontrado ID: ${itemRequest.productId}") }
 
-            if (product.stockQuantity < itemRequest.quantity) {
-                throw RuntimeException("Stock insuficiente para: ${product.name}. Disponible: ${product.stockQuantity}")
+            if (request.type != "COTIZACION") {
+                if (product.stockQuantity < itemRequest.quantity) {
+                    throw RuntimeException("Stock insuficiente: ${product.name}")
+                }
+                product.stockQuantity -= itemRequest.quantity
+                productRepository.save(product)
             }
-
-            product.stockQuantity -= itemRequest.quantity
-            productRepository.save(product)
-
             val itemSubtotal = product.unitPrice.multiply(BigDecimal(itemRequest.quantity))
             calculatedTotal = calculatedTotal.add(itemSubtotal)
 
@@ -67,12 +69,15 @@ class SaleService(
         }
 
         // 5. Calcular Totales Finales
-
+        /* TODO:
+        *   AJUSTAR LA LOGICA DE LOS IMPUESTOS
+        * */
         document.totalAmount = calculatedTotal
         document.subtotal = calculatedTotal // Ajustar lógica según tus impuestos
         document.taxAmount = BigDecimal.ZERO // Ajustar si es necesario
 
-        document.documentNumber = "B001-${System.currentTimeMillis()}"
+        val prefix = if (request.type == "COTIZACION") "COT" else "VTA"
+        document.documentNumber = "$prefix-${System.currentTimeMillis()}"
 
         val savedDoc = documentRepository.save(document)
 
@@ -81,5 +86,29 @@ class SaleService(
             documentNumber = savedDoc.documentNumber,
             totalAmount = savedDoc.totalAmount
         )
+    }
+    @Transactional
+    fun convertQuoteToSale(quoteId: Long, targetType: String): SaleResponse {
+        val document = documentRepository.findByIdOrNull(quoteId)
+            ?: throw RuntimeException("Cotización no encontrada")
+
+        if (document.documentType != DocumentType.COTIZACION) {
+            throw RuntimeException("El documento no es una cotización")
+        }
+        document.details.forEach { detail ->
+            val product = detail.product
+            if (product.stockQuantity < detail.quantity) {
+                throw RuntimeException("No hay stock suficiente ahora para: ${product.name}")
+            }
+            product.stockQuantity -= detail.quantity
+            productRepository.save(product)
+        }
+
+        document.documentType = DocumentType.valueOf(targetType) // BOLETA o FACTURA
+        document.documentNumber = "VTA-${System.currentTimeMillis()}" // Nuevo correlativo de venta
+
+        val savedDoc = documentRepository.save(document)
+
+        return SaleResponse(savedDoc.id!!, savedDoc.documentNumber, savedDoc.totalAmount, "Cotización convertida exitosamente")
     }
 }

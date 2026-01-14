@@ -19,6 +19,14 @@ class CatalogController(private val catalogService: CatalogService) {
         val id = catalogService.createProduct(req)
         return ResponseEntity.ok(mapOf("id" to id, "message" to "Producto creado"))
     }
+    @PutMapping("/products/{id}")
+    fun updateProduct(
+        @PathVariable id: Long,
+        @Valid @RequestBody req: CreateProductRequest
+    ): ResponseEntity<Any> {
+        catalogService.updateProduct(id, req)
+        return ResponseEntity.ok(mapOf("message" to "Producto actualizado correctamente"))
+    }
 
     // Endpoints para Marcas
     @GetMapping("/brands")
@@ -36,12 +44,5 @@ class CatalogController(private val catalogService: CatalogService) {
     fun createCategory(@Valid @RequestBody req: CreateCategoryRequest): ResponseEntity<Any> {
         return ResponseEntity.ok(catalogService.createCategory(req))
     }
-    @PutMapping("/products/{id}")
-    fun updateProduct(
-        @PathVariable id: Long,
-        @Valid @RequestBody req: CreateProductRequest
-    ): ResponseEntity<Any> {
-        catalogService.updateProduct(id, req)
-        return ResponseEntity.ok(mapOf("message" to "Producto actualizado correctamente"))
-    }
+
 }
