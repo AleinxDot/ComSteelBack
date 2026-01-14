@@ -27,7 +27,9 @@ class ProductService(
             categoryName = product.category.name,
             price = product.unitPrice,
             stock = product.stockQuantity,
-            minStock = product.minStockAlert
+            minStock = product.minStockAlert,
+            brandId = product.brand.id!!,
+            categoryId = product.category.id!!
         )
     }
 
@@ -57,7 +59,9 @@ class ProductService(
             categoryName = product.category.name,
             price = product.unitPrice,
             stock = product.stockQuantity,
-            minStock = product.minStockAlert
+            minStock = product.minStockAlert,
+            brandId = product.brand.id!!,
+            categoryId = product.category.id!!
         )
     }
 }

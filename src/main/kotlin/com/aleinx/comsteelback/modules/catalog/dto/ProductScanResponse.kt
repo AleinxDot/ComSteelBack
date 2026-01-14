@@ -9,5 +9,7 @@ data class ProductScanResponse(
     val categoryName: String,
     val price: BigDecimal,
     val stock: Int,
-    val minStock: Int
+    val minStock: Int,
+    val brandId: Int,
+    val categoryId: Int
 )
