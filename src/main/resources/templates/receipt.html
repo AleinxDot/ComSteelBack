@@ -55,7 +55,7 @@
     </table>
 
     <div class="totals">
-        <p>TOTAL: <span th:text="'S/ ' + ${#numbers.formatDecimal(totalAmount, 1, 'COMMA', 2, 'POINT')}">100.00</span></p>
+        <p>TOTAL: <span th:text="'$ ' + ${#numbers.formatDecimal(totalAmount, 1, 'COMMA', 2, 'POINT')}">100.00</span></p>
     </div>
 
     <div class="footer">

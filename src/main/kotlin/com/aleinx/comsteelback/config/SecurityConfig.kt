@@ -49,13 +49,14 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        // Permitir el origen de tu Frontend (Vite usa puerto 5173 por defecto)
-        configuration.allowedOrigins = Arrays.asList("http://localhost:5173", "http://localhost:3000")
-        // Permitir todos los métodos HTTP
+
+        // CAMBIO AQUÍ: Usamos Patrones en lugar de Origenes fijos
+        // Esto permite localhost, 192.168.1.37, o cualquier IP de tu red
+        configuration.allowedOriginPatterns = Arrays.asList("*")
+
         configuration.allowedMethods = Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")
-        // Permitir cabeceras (especialmente Authorization para el Token)
         configuration.allowedHeaders = Arrays.asList("Authorization", "Content-Type", "X-Requested-With")
-        configuration.allowCredentials = true
+        configuration.allowCredentials = true // Esto requiere usar allowedOriginPatterns si usas *
 
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", configuration)
