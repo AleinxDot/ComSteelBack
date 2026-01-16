@@ -1,6 +1,7 @@
 package com.aleinx.comsteelback.modules.catalog.repository
 
 import com.aleinx.comsteelback.modules.catalog.model.Product
+import jakarta.transaction.Status
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
@@ -26,7 +27,7 @@ interface ProductRepository : JpaRepository<Product, Long> {
         SELECT p FROM Product p 
         LEFT JOIN FETCH p.brand 
         LEFT JOIN FETCH p.category 
-        WHERE p.isActive = true 
+        WHERE p.isActive = :status 
         AND (
             LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR 
             LOWER(p.brand.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
@@ -34,7 +35,9 @@ interface ProductRepository : JpaRepository<Product, Long> {
             p.barcode LIKE CONCAT('%', :search, '%')
         )
     """)
-    fun searchProducts(@Param("search") search: String, pageable: Pageable): Page<Product>
+    fun searchProducts(@Param("search") search: String,status: Boolean, pageable: Pageable): Page<Product>
+
+    fun findByIsActive(isActive: Boolean, pageable: Pageable): Page<Product>
 
     // Incluir todos los productos
     @Query("""

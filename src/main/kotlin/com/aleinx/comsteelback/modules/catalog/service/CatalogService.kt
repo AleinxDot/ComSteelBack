@@ -84,6 +84,14 @@ class CatalogService(
 
         productRepository.save(product)
     }
+    @Transactional
+    fun toggleProductStatus(id: Long) {
+        val product = productRepository.findByIdOrNull(id)
+            ?: throw RuntimeException("Producto no encontrado")
+
+        product.isActive = !product.isActive
+        productRepository.save(product)
+    }
 
     fun getAllBrands(): List<DropdownItem> = brandRepository.findAll()
         .map { DropdownItem(it.id!!, it.name) }

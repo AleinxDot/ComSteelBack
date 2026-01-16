@@ -2,66 +2,150 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Comprobante de Venta</title>
+    <title>Boleta Electrónica</title>
     <style>
-        body { font-family: sans-serif; font-size: 12px; color: #333; }
-        .container { width: 100%; max-width: 80mm; margin: 0 auto; } /* Ancho ticket térmico */
-        .header { text-align: center; margin-bottom: 10px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
-        .header h1 { margin: 0; font-size: 16px; font-weight: bold; }
-        .info { margin-bottom: 10px; }
-        .info p { margin: 2px 0; }
+        /* --- CONFIGURACIÓN DE PÁGINA A4 --- */
+        @page {
+            size: A4;
+            margin: 15mm; /* Márgenes para impresoras estándar */
+        }
 
-        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-        th { text-align: left; border-bottom: 1px solid #000; font-size: 10px; }
-        td { padding: 4px 0; font-size: 11px; }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            color: #000;
+        }
+
+        /* Utilidades */
+        table { width: 100%; border-collapse: collapse; }
         .text-right { text-align: right; }
         .text-center { text-align: center; }
+        .bold { font-weight: bold; }
 
-        .totals { border-top: 1px dashed #000; padding-top: 5px; }
-        .totals p { text-align: right; margin: 2px 0; font-weight: bold; }
+        /* Cabecera */
+        .header-table { margin-bottom: 20px; }
+        .company-name { font-size: 16px; font-weight: bold; }
 
-        .footer { text-align: center; margin-top: 20px; font-size: 10px; color: #777; }
+        /* Caja RUC */
+        .ruc-box {
+            border: 1px solid #000;
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px; /* Redondeado opcional */
+        }
+        .ruc-header { font-size: 14px; font-weight: bold; display: block; }
+        .doc-type-box {
+            background-color: #f0f0f0;
+            padding: 5px;
+            margin: 5px 0;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* Tabla Items */
+        .items-table { margin-top: 15px; border: 1px solid #000; }
+        .items-table th {
+            border-bottom: 1px solid #000;
+            padding: 4px;
+            font-size: 10px;
+            background-color: #eee;
+        }
+        .items-table td { padding: 4px; border-right: 1px solid #ccc; }
+        .items-table td:last-child { border-right: none; }
+
+        /* Totales */
+        .totals-container { margin-top: 5px; }
+        .son-text {
+            border-top: 1px solid #000;
+            padding-top: 5px;
+            font-weight: bold;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h1 th:text="${companyName}">CmSteel S.A.C.</h1>
-        <p>RUC: 20123456789</p>
-        <p th:text="${documentType} + ' - ' + ${documentNumber}">BOLETA - 001</p>
-        <p th:text="${issueDate}">12/12/2023 10:00</p>
-    </div>
 
-    <div class="info">
-        <p><strong>Cliente:</strong> <span th:text="${customerName}">Juan Perez</span></p>
-        <p><strong>Doc:</strong> <span th:text="${customerDoc}">12345678</span></p>
-    </div>
+<table class="header-table">
+    <tr>
+        <td style="width: 60%; vertical-align: top;">
+            <div class="company-name" th:text="${companyName}">NOMBRE DE LA EMPRESA</div>
+            <div>NOMBRE DEL PROPIETARIO</div>
+            <div>DIRECCION COMPLETA</div>
+            <div>LOCACION</div>
+        </td>
+        <td style="width: 40%;">
+            <div class="ruc-box">
+                <span class="ruc-header">RUC: 10000000000</span>
+                <div class="doc-type-box" th:text="${documentType == 'BOLETA' ? 'BOLETA DE VENTA ELECTRÓNICA' : 'FACTURA ELECTRÓNICA'}">
+                    BOLETA DE VENTA
+                </div>
+                <span class="ruc-header" th:text="${documentNumber}">B001-123</span>
+            </div>
+        </td>
+    </tr>
+</table>
 
-    <table>
-        <thead>
-        <tr>
-            <th width="50%">Producto</th>
-            <th width="15%" class="text-center">Cant</th>
-            <th width="35%" class="text-right">Total</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="item : ${items}">
-            <td th:text="${item.productName}">Cinta 3M</td>
-            <td class="text-center" th:text="${item.quantity}">2</td>
-            <td class="text-right" th:text="'S/ ' + ${#numbers.formatDecimal(item.subtotal, 1, 'COMMA', 2, 'POINT')}">10.00</td>
-        </tr>
-        </tbody>
-    </table>
+<table style="margin-bottom: 10px;">
+    <tr><td class="bold" style="width: 100px;">Fecha Emisión:</td><td th:text="${issueDate}">01/01/2026</td></tr>
+    <tr><td class="bold">Señor(es):</td><td th:text="${customerName}">JUAN PEREZ</td></tr>
+    <tr><td class="bold">DNI/RUC:</td><td th:text="${customerDoc}">12345678</td></tr>
+    <tr><td class="bold">Moneda:</td><td>DOLARES</td></tr>
+</table>
 
-    <div class="totals">
-        <p>TOTAL: <span th:text="'$ ' + ${#numbers.formatDecimal(totalAmount, 1, 'COMMA', 2, 'POINT')}">100.00</span></p>
-    </div>
+<table class="items-table">
+    <thead>
+    <tr>
+        <th style="width: 10%;">CANT.</th>
+        <th style="width: 10%;">UNID.</th>
+        <th style="width: 50%; text-align: left;">DESCRIPCIÓN</th>
+        <th style="width: 15%;">P. UNIT</th>
+        <th style="width: 15%;">IMPORTE</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${items}">
+        <td class="text-center" th:text="${item.quantity}">1</td>
+        <td class="text-center">NIU</td>
+        <td th:text="${item.productName}">Producto X</td>
+        <td class="text-right" th:text="${#numbers.formatDecimal(item.unitPrice, 1, 'COMMA', 2, 'POINT')}">10.00</td>
+        <td class="text-right" th:text="${#numbers.formatDecimal(item.subtotal, 1, 'COMMA', 2, 'POINT')}">10.00</td>
+    </tr>
+    </tbody>
+</table>
 
-    <div class="footer">
-        <p>¡Gracias por su preferencia!</p>
-        <p>Conserve este voucher.</p>
-    </div>
+<table class="totals-container">
+    <tr>
+        <td style="width: 60%; vertical-align: top;">
+            <div class="son-text" th:text="${amountInWords}">SON: TREINTA Y SIETE CON 00/100 SOLES</div>
+        </td>
+
+        <td style="width: 40%;">
+            <table style="font-size: 11px;">
+                <tr>
+                    <td class="text-right">Op. Gravada:</td>
+                    <td class="text-right bold" th:text="'S/ ' + ${#numbers.formatDecimal(opGravada, 1, 'COMMA', 2, 'POINT')}">31.36</td>
+                </tr>
+                <tr>
+                    <td class="text-right">Op. Exonerada:</td>
+                    <td class="text-right">S/ 0.00</td>
+                </tr>
+                <tr>
+                    <td class="text-right">IGV (18%):</td>
+                    <td class="text-right bold" th:text="'S/ ' + ${#numbers.formatDecimal(igv, 1, 'COMMA', 2, 'POINT')}">5.64</td>
+                </tr>
+                <tr>
+                    <td class="text-right" style="border-top: 1px solid #000; padding-top: 4px;">IMPORTE TOTAL:</td>
+                    <td class="text-right bold" style="border-top: 1px solid #000; padding-top: 4px; font-size: 13px;"
+                        th:text="'S/ ' + ${#numbers.formatDecimal(totalAmount, 1, 'COMMA', 2, 'POINT')}">37.00</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<div style="text-align: center; font-size: 9px; margin-top: 30px; border-top: 1px solid #ccc; padding-top: 5px;">
+    Representación impresa de la Boleta de Venta Electrónica. Consulte en www.sunat.gob.pe
 </div>
+
 </body>
 </html>
