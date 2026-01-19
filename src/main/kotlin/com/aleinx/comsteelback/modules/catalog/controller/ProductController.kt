@@ -22,7 +22,7 @@ class ProductController(
         return if (productDto != null) {
             ResponseEntity.ok(productDto)
         } else {
-            // Retornamos 404 si no existe, ideal para que el frontend haga un sonido de error
+            // Retornamos 404 si no existe
             ResponseEntity.notFound().build()
         }
     }
@@ -31,7 +31,8 @@ class ProductController(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
         @RequestParam(required = false) search: String?,
-        @RequestParam(defaultValue = "true") isActive: Boolean
+        @RequestParam(defaultValue = "true") isActive: Boolean,
+
     ): ResponseEntity<Page<Any>> { // Usamos Page<Any> o el DTO
         val response = productService.getAllProducts(page, size, isActive,search)
         return ResponseEntity.ok(response as Page<Any>)
