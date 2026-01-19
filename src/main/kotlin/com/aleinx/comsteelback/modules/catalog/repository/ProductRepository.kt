@@ -21,8 +21,6 @@ interface ProductRepository : JpaRepository<Product, Long> {
         WHERE p.barcode = :barcode AND p.isActive = true
     """)
     fun findByBarcode(barcode: String): Product?
-
-    //Busqueda con paginado
     @Query("""
         SELECT p FROM Product p 
         LEFT JOIN FETCH p.brand 
@@ -35,11 +33,16 @@ interface ProductRepository : JpaRepository<Product, Long> {
             p.barcode LIKE CONCAT('%', :search, '%')
         )
     """)
-    fun searchProducts(@Param("search") search: String,status: Boolean, pageable: Pageable): Page<Product>
+    fun searchProducts(@Param("search") search: String, @Param("status") status: Boolean, pageable: Pageable): Page<Product>
 
-    fun findByIsActive(isActive: Boolean, pageable: Pageable): Page<Product>
+    @Query("""
+        SELECT p FROM Product p 
+        LEFT JOIN FETCH p.brand 
+        LEFT JOIN FETCH p.category 
+        WHERE p.isActive = :isActive
+    """)
+    fun findByIsActive(@Param("isActive") isActive: Boolean, pageable: Pageable): Page<Product>
 
-    // Incluir todos los productos
     @Query("""
         SELECT p FROM Product p 
         LEFT JOIN FETCH p.brand 
@@ -48,14 +51,12 @@ interface ProductRepository : JpaRepository<Product, Long> {
     """)
     override fun findAll(pageable: Pageable): Page<Product>
 
-
-
     // Cuenta cuántos productos están en peligro (stock <= minStock)
     @Query("SELECT COUNT(p) FROM Product p WHERE p.isActive = true AND p.stockQuantity <= p.minStockAlert")
     fun countLowStock(): Long
 
     // Trae la lista de productos en peligro (para mostrar en tabla)
     @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.stockQuantity <= p.minStockAlert")
-    fun findLowStockProducts(): List<Product>
+    fun findLowStockProducts(pageable: Pageable): Page<Product>
 
 }

@@ -19,4 +19,21 @@ interface DocumentRepository : JpaRepository<Document, Long>{
     // Cuenta cuántas ventas hubo
     @Query("SELECT COUNT(d) FROM Document d WHERE d.status = 'COMPLETED' AND d.issueDate BETWEEN :start AND :end")
     fun countSalesBetween(@Param("start") start: LocalDateTime, @Param("end") end: LocalDateTime): Long
+
+    @Query("""
+    SELECT 
+        p.category.name as categoryName, 
+        SUM(d.subtotal) as total 
+    FROM DocumentDetail d
+    JOIN d.product p
+    JOIN d.document doc
+    WHERE doc.status = 'COMPLETED'
+    AND doc.issueDate BETWEEN :start AND :end
+    GROUP BY p.category.name
+    ORDER BY total DESC
+""")
+    fun getSalesByCategory(
+        @Param("start") start: LocalDateTime,
+        @Param("end") end: LocalDateTime
+    ): List<Array<Any>>
 }

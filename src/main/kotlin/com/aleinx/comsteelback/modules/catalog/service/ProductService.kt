@@ -14,42 +14,44 @@ class ProductService(
     private val productRepository: ProductRepository
 ) {
 
-    @Transactional(readOnly = true) // Optimiza rendimiento para solo lectura
+    @Transactional(readOnly = true)
     fun findByBarcode(barcode: String): ProductScanResponse? {
         val product = productRepository.findByBarcode(barcode) ?: return null
-
-        // Mapeo manual (Entity -> DTO)
-        return ProductScanResponse(
-            id = product.id!!,
-            barcode = product.barcode,
-            name = product.name,
-            brandName = product.brand.name,
-            categoryName = product.category.name,
-            price = product.unitPrice,
-            stock = product.stockQuantity,
-            minStock = product.minStockAlert,
-            brandId = product.brand.id!!,
-            categoryId = product.category.id!!
-        )
+        return mapToDto(product)
     }
 
     @Transactional(readOnly = true)
-    fun getAllProducts(page: Int, size: Int,status: Boolean, search: String?): Page<ProductScanResponse> {
-        // 1. Configurar la página (Ordenado por ID descendente para ver lo nuevo primero)
-        val pageable = PageRequest.of(page, size, Sort.by("brand").ascending())
+    fun getAllProducts(
+        page: Int,
+        size: Int,
+        status: Boolean,
+        search: String?,
+        sortParam: String
+    ): Page<ProductScanResponse> {
 
-        // 2. Ejecutar consulta (con o sin filtro)
-        val productPage = if (search.isNullOrBlank()) {
-            productRepository.findAll(pageable)
-        } else {
-            productRepository.searchProducts(search, status,pageable)
+        // Parsear "columna,direccion"
+        val sortSplit = sortParam.split(",")
+        val sortProperty = sortSplit[0]
+        val sortDirection = if (sortSplit.getOrElse(1) { "asc" }.equals("desc", ignoreCase = true))
+            Sort.Direction.DESC else Sort.Direction.ASC
+
+        // Mapeo seguro de Frontend -> Entidad BD
+        val entityProperty = when (sortProperty) {
+            "stock" -> "stockQuantity"
+            "price" -> "unitPrice"
+            else -> sortProperty
         }
 
-        // 3. Convertir Entidad -> DTO manteniendo la estructura de página
+        val pageable = PageRequest.of(page, size, Sort.by(sortDirection, entityProperty))
+
+        val productPage = if (search.isNullOrBlank()) {
+            productRepository.findByIsActive(status, pageable)
+        } else {
+            productRepository.searchProducts(search, status, pageable)
+        }
         return productPage.map { product -> mapToDto(product) }
     }
 
-    // Helper para no repetir código de mapeo
     private fun mapToDto(product: Product): ProductScanResponse {
         return ProductScanResponse(
             id = product.id!!,

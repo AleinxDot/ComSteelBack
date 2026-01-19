@@ -1,14 +1,19 @@
 package com.aleinx.comsteelback.modules.reports.service
 
 import com.aleinx.comsteelback.modules.catalog.repository.ProductRepository
+import com.aleinx.comsteelback.modules.reports.dto.CategorySaleDto
 import com.aleinx.comsteelback.modules.reports.dto.DashboardResponse
 import com.aleinx.comsteelback.modules.reports.dto.LowStockProductDto
 import com.aleinx.comsteelback.modules.sales.repository.DocumentRepository
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.temporal.TemporalAdjusters
 
 @Service
 class DashboardService(
@@ -17,21 +22,40 @@ class DashboardService(
 ) {
 
     @Transactional(readOnly = true)
-    fun getDashboardStats(): DashboardResponse {
-        // 1. Definir rango de tiempo (Hoy)
-        val startOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MIN) // 00:00:00
-        val endOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MAX)   // 23:59:59.999
+    fun getGeneralStats(): DashboardResponse {
+        val now = LocalDateTime.now()
+        val startOfMonth = now.with(TemporalAdjusters.firstDayOfMonth()).with(LocalTime.MIN)
 
-        // 2. Obtener métricas de Ventas
-        val totalMoney = documentRepository.sumTotalSalesBetween(startOfDay, endOfDay)
-        val totalCount = documentRepository.countSalesBetween(startOfDay, endOfDay)
+        val totalMoney = documentRepository.sumTotalSalesBetween(startOfMonth, now) ?: BigDecimal.ZERO
+        val totalCount = documentRepository.countSalesBetween(startOfMonth, now)
 
-        // 3. Obtener métricas de Inventario
+
+        val categoryData = documentRepository.getSalesByCategory(startOfMonth, now)
+
+        val categoriesDto = categoryData.take(5).map { row ->
+            val name = row[0] as String
+            val amount = row[1] as BigDecimal
+            val percentage = if (totalMoney.compareTo(BigDecimal.ZERO) > 0)
+                amount.toDouble() / totalMoney.toDouble() * 100
+            else 0.0
+
+            CategorySaleDto(name, amount, percentage)
+        }
+
         val lowStockCount = productRepository.countLowStock()
-        val lowStockEntities = productRepository.findLowStockProducts()
 
-        // 4. Convertir entidades a DTOs ligeros
-        val lowStockDtos = lowStockEntities.map { p ->
+        return DashboardResponse(
+            monthlySalesAmount = totalMoney,
+            monthlySalesCount = totalCount,
+            lowStockTotalCount = lowStockCount,
+            salesByCategory = categoriesDto
+        )
+    }
+
+    // Nuevo método solo para la tabla paginada
+    @Transactional(readOnly = true)
+    fun getLowStockPaginated(pageable: Pageable): Page<LowStockProductDto> {
+        return productRepository.findLowStockProducts(pageable).map { p ->
             LowStockProductDto(
                 id = p.id!!,
                 name = p.name,
@@ -39,12 +63,5 @@ class DashboardService(
                 minStock = p.minStockAlert
             )
         }
-
-        return DashboardResponse(
-            todaySalesAmount = totalMoney,
-            todaySalesCount = totalCount,
-            lowStockCount = lowStockCount,
-            lowStockProducts = lowStockDtos
-        )
     }
 }
