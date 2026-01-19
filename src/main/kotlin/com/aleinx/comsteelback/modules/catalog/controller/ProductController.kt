@@ -31,8 +31,7 @@ class ProductController(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
         @RequestParam(required = false) search: String?,
-        @RequestParam(defaultValue = "true") isActive: Boolean,
-
+        @RequestParam(defaultValue = "true") isActive: Boolean
     ): ResponseEntity<Page<Any>> { // Usamos Page<Any> o el DTO
         val response = productService.getAllProducts(page, size, isActive,search)
         return ResponseEntity.ok(response as Page<Any>)

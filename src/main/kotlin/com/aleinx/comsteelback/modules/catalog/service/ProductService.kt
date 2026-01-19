@@ -3,7 +3,6 @@ package com.aleinx.comsteelback.modules.catalog.service
 import com.aleinx.comsteelback.modules.catalog.dto.ProductScanResponse
 import com.aleinx.comsteelback.modules.catalog.model.Product
 import com.aleinx.comsteelback.modules.catalog.repository.ProductRepository
-import jakarta.transaction.Status
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -37,7 +36,7 @@ class ProductService(
     @Transactional(readOnly = true)
     fun getAllProducts(page: Int, size: Int,status: Boolean, search: String?): Page<ProductScanResponse> {
         // 1. Configurar la página (Ordenado por ID descendente para ver lo nuevo primero)
-        val pageable = PageRequest.of(page, size, Sort.by("id").descending())
+        val pageable = PageRequest.of(page, size, Sort.by("brand").ascending())
 
         // 2. Ejecutar consulta (con o sin filtro)
         val productPage = if (search.isNullOrBlank()) {
