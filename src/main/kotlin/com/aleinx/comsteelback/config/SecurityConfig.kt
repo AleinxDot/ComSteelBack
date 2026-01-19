@@ -26,15 +26,22 @@ class SecurityConfig(
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            // 1. Configuración CORS explícita (Permitir conexión desde React)
             .cors { it.configurationSource(corsConfigurationSource()) }
-
             .csrf { it.disable() }
             .authorizeHttpRequests { auth ->
+                // Auth pública
                 auth.requestMatchers("/api/v1/auth/**").permitAll()
-                auth.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                // Documentación pública
+                auth.requestMatchers(
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/v3/api-docs/**",
+                    "/api-docs/**"
+                ).permitAll()
+
                 // Permitir explícitamente las peticiones OPTIONS (Preflight)
                 auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+
                 auth.anyRequest().authenticated()
             }
             .sessionManagement {
@@ -45,18 +52,15 @@ class SecurityConfig(
         return http.build()
     }
 
-    // --- NUEVO: Configuración Global de CORS ---
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
 
-        // CAMBIO AQUÍ: Usamos Patrones en lugar de Origenes fijos
-        // Esto permite localhost, 192.168.1.37, o cualquier IP de tu red
         configuration.allowedOriginPatterns = Arrays.asList("*")
 
         configuration.allowedMethods = Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")
         configuration.allowedHeaders = Arrays.asList("Authorization", "Content-Type", "X-Requested-With")
-        configuration.allowCredentials = true // Esto requiere usar allowedOriginPatterns si usas *
+        configuration.allowCredentials = true // Si necesitas enviar cookies o credenciales
 
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", configuration)
