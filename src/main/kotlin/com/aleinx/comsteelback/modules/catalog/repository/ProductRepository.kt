@@ -1,7 +1,6 @@
 package com.aleinx.comsteelback.modules.catalog.repository
 
 import com.aleinx.comsteelback.modules.catalog.model.Product
-import jakarta.transaction.Status
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
