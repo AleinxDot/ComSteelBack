@@ -1,0 +1,1 @@
+exec sp_rename 'dbo.StockMovement.suppplier_id', 'supplier_id', 'COLUMN';

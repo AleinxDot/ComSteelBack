@@ -1,6 +1,8 @@
 package com.aleinx.comsteelback.modules.sales.repository
 
 import com.aleinx.comsteelback.modules.sales.model.Customer
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
@@ -14,4 +16,7 @@ interface ClientRepository : JpaRepository<Customer, Long> {
     fun search(query: String): List<Customer>
 
     fun existsByDocNumber(docNumber: String): Boolean
+
+    fun findByNameContainingIgnoreCase(name: String): List<Customer>
+
 }

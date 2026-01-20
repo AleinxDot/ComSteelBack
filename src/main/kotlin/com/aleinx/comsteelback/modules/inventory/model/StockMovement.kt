@@ -3,7 +3,6 @@ package com.aleinx.comsteelback.modules.inventory.model
 import com.aleinx.comsteelback.common.enums.MovementType
 import com.aleinx.comsteelback.modules.auth.model.User
 import jakarta.persistence.*
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Entity
@@ -24,6 +23,10 @@ class StockMovement(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     val user: User,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id")
+    val supplier: Supplier? = null,
 
     @Column(name = "movement_date")
     val date: LocalDateTime = LocalDateTime.now(),
